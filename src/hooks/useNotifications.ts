@@ -7,7 +7,7 @@ import {
 export function useNotifications() {
   const addNotification = useSetAtom(addNotificationAtom)
   
-  // 🎯 Предустановленные типы уведомлений
+  // Предустановленные типы уведомлений
   const showSuccess = useCallback((title: string, message: string, duration = 5000) => {
     addNotification({ type: 'success', title, message, duration })
   }, [addNotification])
@@ -24,7 +24,7 @@ export function useNotifications() {
     addNotification({ type: 'info', title, message, duration })
   }, [addNotification])
   
-  // 🎯 Специальные уведомления для Web3
+  // Специальные уведомления для Web3
   const showTransactionSent = useCallback((txHash: string) => {
     addNotification({
       type: 'info',

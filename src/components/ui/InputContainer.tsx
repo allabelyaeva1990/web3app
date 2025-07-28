@@ -1,3 +1,5 @@
+import React from "react"
+
 interface InputContainerProps {
   label: string
   balance?: string
@@ -5,12 +7,16 @@ interface InputContainerProps {
   children: React.ReactNode
 }
 
-export function InputContainer({ 
+export const InputContainer = React.memo<InputContainerProps>(function InputContainer({ 
   label, 
   balance, 
   onMaxClick, 
   children 
-}: InputContainerProps) {
+}) {
+  const handleClick = React.useCallback(() => {
+    onMaxClick?.()
+  }, [onMaxClick])
+
   return (
     <div style={{
       border: '2px solid #f1f3f4',
@@ -33,7 +39,7 @@ export function InputContainer({
               cursor: onMaxClick ? 'pointer' : 'default',
               fontWeight: '500'
             }}
-            onClick={onMaxClick}
+            onClick={handleClick}
           >
             {balance}
             {onMaxClick && (
@@ -45,4 +51,4 @@ export function InputContainer({
       {children}
     </div>
   )
-}
+})

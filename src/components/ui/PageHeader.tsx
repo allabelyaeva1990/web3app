@@ -1,3 +1,5 @@
+import React from "react"
+
 interface PageHeaderProps {
   title: string
   subtitle?: string
@@ -5,12 +7,12 @@ interface PageHeaderProps {
   gradient?: string
 }
 
-export function PageHeader({ 
+export const PageHeader = React.memo<PageHeaderProps>(function PageHeader({ 
   title, 
   subtitle, 
   icon,
   gradient = 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)'
-}: PageHeaderProps) {
+}) {
   return (
     <div style={{ marginBottom: '32px', textAlign: 'center' }}>
       <h1 style={{
@@ -35,4 +37,4 @@ export function PageHeader({
       )}
     </div>
   )
-}
+})

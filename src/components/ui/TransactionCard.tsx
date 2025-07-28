@@ -15,10 +15,10 @@ export function TransactionCard({
   // Функции для получения типа операции, иконки и цвета статуса
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const getOperationType = (tx: any) => {
-    if (tx.inputToken.symbol === 'ETH' && tx.outputToken.symbol !== 'ETH') {
+    if (tx.operationType === 'buy') {
       return { type: 'buy', icon: '💰', label: 'Покупка' }
     }
-    if (tx.inputToken.symbol !== 'ETH' && tx.outputToken.symbol === 'ETH') {
+    if (tx.operationType === 'sell') {
       return { type: 'sell', icon: '💸', label: 'Продажа' }
     }
     return { type: 'swap', icon: '🔄', label: 'Обмен' }

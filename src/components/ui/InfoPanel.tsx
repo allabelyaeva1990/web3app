@@ -1,8 +1,10 @@
+import React from "react"
+
 interface InfoPanelProps {
   children: React.ReactNode
 }
 
-export function InfoPanel({ children }: InfoPanelProps) {
+export const InfoPanel = React.memo<InfoPanelProps>(function InfoPanel({ children }) {
   return (
     <div style={{
       fontSize: '14px',
@@ -16,4 +18,4 @@ export function InfoPanel({ children }: InfoPanelProps) {
       {children}
     </div>
   )
-}
+})

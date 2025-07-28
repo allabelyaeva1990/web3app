@@ -1,8 +1,21 @@
+import React from "react"
+
 interface FlipButtonProps {
   onClick: () => void
 }
 
-export function FlipButton({ onClick }: FlipButtonProps) {
+export const FlipButton = React.memo<FlipButtonProps>(function FlipButton({ onClick }) {
+  const hoverHandlers = React.useMemo(() => ({
+    onMouseOver: (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.currentTarget.style.borderColor = '#007bff'
+      e.currentTarget.style.transform = 'rotate(180deg)'
+    },
+    onMouseOut: (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.currentTarget.style.borderColor = '#e1e5e9'
+      e.currentTarget.style.transform = 'rotate(0deg)'
+    }
+  }), [])
+
   return (
     <div style={{ textAlign: 'center', margin: '16px 0' }}>
       <button
@@ -21,17 +34,10 @@ export function FlipButton({ onClick }: FlipButtonProps) {
           transition: 'all 0.2s',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.borderColor = '#007bff'
-          e.currentTarget.style.transform = 'rotate(180deg)'
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.borderColor = '#e1e5e9'
-          e.currentTarget.style.transform = 'rotate(0deg)'
-        }}
+        {...hoverHandlers}
       >
         ⇅
       </button>
     </div>
   )
-}
+})

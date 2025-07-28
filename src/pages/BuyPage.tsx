@@ -1,171 +1,106 @@
-// src/pages/BuyPage.tsx - Страница покупки токенов
-import { useState, useCallback } from 'react'
-import { useAccount, useBalance } from 'wagmi'
-import { useSetAtom } from 'jotai'
-import { addNotificationAtom, addTransactionsHistoryAtom, updateTransactionsHistoryAtom } from '../store/atoms'
+
+import React, { useState, useCallback } from 'react'
+import { TokenSelector } from '../components/TokenSelector'
 import { POPULAR_TOKENS } from '../constants/tokens'
+import { 
+  Card, 
+  Button, 
+  InputContainer, 
+  NumberInput, 
+  InfoPanel, 
+  InfoRow,
+  PageHeader 
+} from '../components/ui'
+import { 
+  useSwapOperations,
+  useWeb3Connection,
+  useAppLocalization,
+  useTokenBalance
+} from '../hooks'
 import type { Token } from '../store/atoms'
-import { Button, Card, InfoPanel, InfoRow, InputContainer, NumberInput, PageHeader, TokenSelector } from '../components'
 
-export function BuyPage() {
-  const { address } = useAccount()
-  const addNotification = useSetAtom(addNotificationAtom)
-  const addToHistory = useSetAtom(addTransactionsHistoryAtom)
-  const updateHistory = useSetAtom(updateTransactionsHistoryAtom)
-
-  // Состояние формы
+export const BuyPage = React.memo(function BuyPage() {
+  const { t } = useAppLocalization()
+  const { isConnected } = useWeb3Connection()  
+  
+  const { handleBuy, calculateExchangeRate } = useSwapOperations()
+  
+  // Локальное состояние страницы
   const [ethAmount, setEthAmount] = useState('')
-  const [selectedToken, setSelectedToken] = useState<Token>(POPULAR_TOKENS[1]) // USDC по умолчанию
+  const [selectedToken, setSelectedToken] = useState<Token>(POPULAR_TOKENS[1])
   const [isLoading, setIsLoading] = useState(false)
 
-  // Получаем баланс ETH
-  const { data: ethBalance } = useBalance({
-    address,
-    query: { enabled: !!address }
+  // Баланс ETH 
+  const ethBalance = useTokenBalance({
+    address: '0x0000000000000000000000000000000000000000',
+    symbol: 'ETH',
+    decimals: 18,
+    name: 'Ethereum'
   })
 
-  // Простая логика расчета (в реальности - через API или оракул цен)
-  const calculateTokenAmount = useCallback((ethAmount: string) => {
-    if (!ethAmount || isNaN(Number(ethAmount))) return '0'
-    
-    // Моковые курсы (ETH = $2000)
-    const ethPrice = 2000
-    const tokenPrices: Record<string, number> = {
-      'USDC': 1,
-      'DAI': 1,
-      'USDT': 1,
-      'WBTC': 40000, // примерно 20x от ETH
-    }
-    
-    const tokenPrice = tokenPrices[selectedToken.symbol] || 1
-    const usdValue = Number(ethAmount) * ethPrice
-    const tokenAmount = usdValue / tokenPrice
-    
-    return tokenAmount.toFixed(Math.min(6, selectedToken.decimals))
-  }, [selectedToken])
+  // Расчет количества токенов
+  const tokenAmount = calculateExchangeRate(
+    { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18, name: 'Ethereum' },
+    selectedToken,
+    ethAmount
+  )
 
-  // Вычисляем количество токенов для покупки
-  const tokenAmount = calculateTokenAmount(ethAmount)
-
-  // Проверяем возможность покупки
+  // Проверка возможности покупки
   const canBuy = !!(
-    address &&
+    isConnected &&
     ethAmount &&
     Number(ethAmount) > 0 &&
-    ethBalance &&
+    ethBalance.data &&
     Number(ethAmount) <= Number(ethBalance.formatted) &&
     !isLoading
   )
 
-  // Функция покупки
-  const handleBuy = useCallback(async () => {
+  // Обработчик покупки
+  const handleBuyClick = useCallback(async () => {
     if (!canBuy) return
 
     setIsLoading(true)
-    const id = Date.now().toString();
     try {
-      addNotification({
-        type: 'info',
-        title: '💰 Покупка начата',
-        message: `Покупаем ${tokenAmount} ${selectedToken.symbol} за ${ethAmount} ETH`,
-        duration: 5000
-      })
-      // Добавляем в историю как покупку
-      addToHistory({
-        id,
-        inputToken: {
-          address: '0x0000000000000000000000000000000000000000',
-          symbol: 'ETH',
-          decimals: 18,
-          name: 'Ethereum'
-        },
-        outputToken: selectedToken,
-        inputAmount: ethAmount,
-        outputAmount: tokenAmount,
-        status: 'pending'
-      })
-
-      // Имитируем транзакцию
-      await new Promise(resolve => setTimeout(resolve, 3000))
-      
-      addNotification({
-        type: 'success',
-        title: '✅ Покупка успешна!',
-        message: `Получено ${tokenAmount} ${selectedToken.symbol}`,
-        duration: 10000
-      })
-
-      updateHistory({
-        id,
-        updates: {
-          status: 'success'
-        }
-      })
-      
-      // Очищаем форму
-      setEthAmount('')
-      
+      await handleBuy(ethAmount, selectedToken)
+      setEthAmount('') 
     } catch (error) {
-      addNotification({
-        type: 'error',
-        title: '❌ Ошибка покупки',
-        message: error instanceof Error ? error.message : 'Неизвестная ошибка',
-        duration: 10000
-      })
-      addToHistory({
-        id,
-        inputToken: {
-          address: '0x0000000000000000000000000000000000000000',
-          symbol: 'ETH',
-          decimals: 18,
-          name: 'Ethereum'
-        },
-        outputToken: selectedToken,
-        inputAmount: ethAmount,
-        outputAmount: tokenAmount,
-        status: 'failed'
-      })
+      // Ошибка обработана в хуке
     } finally {
       setIsLoading(false)
     }
-  }, [canBuy, ethAmount, tokenAmount, selectedToken, addNotification, addToHistory, updateHistory])
+  }, [canBuy, handleBuy, ethAmount, selectedToken])
 
-  // Функция для установки максимального количества ETH (с резервом на газ)
+  // Максимальная сумма ETH
   const handleMaxClick = useCallback(() => {
-    if (ethBalance) {
+    if (ethBalance.data) {
       const maxAmount = Math.max(0, Number(ethBalance.formatted) - 0.01)
       setEthAmount(maxAmount.toString())
     }
-  }, [ethBalance])
+  }, [ethBalance.data, ethBalance.formatted])
 
-  const formatETHBalance = () => {
-    if (!address) return 'Не подключен'
-    if (ethBalance) return `${Number(ethBalance.formatted).toFixed(4)} ETH`
-    return '0.0000 ETH'
-  }
-
+  // Текст кнопки
   const getButtonText = () => {
-    if (isLoading) return '⏳ Обработка покупки...'
-    if (!address) return 'Подключите кошелек'
-    if (!ethAmount || Number(ethAmount) === 0) return 'Введите сумму ETH'
-    if (ethBalance && Number(ethAmount) > Number(ethBalance.formatted)) return '❌ Недостаточно ETH'
-    return `💰 Купить ${selectedToken.symbol} за ${ethAmount} ETH`
+    if (isLoading) return t('processingPurchase')
+    if (!isConnected) return t('connectWallet')
+    if (!ethAmount || Number(ethAmount) === 0) return t('enterETHAmount')
+    if (ethBalance.data && Number(ethAmount) > Number(ethBalance.formatted)) return t('insufficientETH')
+    return `${t('buyWith', { token: selectedToken.symbol, amount: ethAmount })}`
   }
 
   return (
     <div>
       <PageHeader 
-        title="Покупка токенов"
-        subtitle="Купите токены за ETH по текущему курсу"
+        title={t('buyTokens')}
+        subtitle={t('buyDescription')}
         icon="💰"
         gradient="linear-gradient(135deg, #28a745 0%, #20c997 100%)"
       />
 
       <Card>
         <InputContainer
-          label="Платите (ETH)"
-          balance={formatETHBalance()}
-          onMaxClick={ethBalance && address ? handleMaxClick : undefined}
+          label={t('paying')}
+          balance={`${t('balance')}: ${ethBalance.formatted || '0.0000'} ETH`}
+          onMaxClick={ethBalance.data && isConnected ? handleMaxClick : undefined}
         >
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <NumberInput
@@ -184,7 +119,7 @@ export function BuyPage() {
               fontWeight: 'bold',
               color: '#1976d2'
             }}>
-              <span>ETH</span>
+              ETH
             </div>
           </div>
         </InputContainer>
@@ -200,26 +135,24 @@ export function BuyPage() {
             alignItems: 'center',
             justifyContent: 'center',
             fontSize: '20px'
-          }}>
-            ↓
-          </div>
+          }}>↓</div>
         </div>
 
         <InputContainer
-          label="Получаете"
-          balance={`Курс: 1 ETH = $${((Number(tokenAmount) / Number(ethAmount || 1)).toFixed(2))} ${selectedToken.symbol}`}
+          label={t('receiving')}
+          balance={`${t('rate')}: 1 ETH = ${tokenAmount} ${selectedToken.symbol}`}
         >
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <NumberInput
               value={tokenAmount}
-              onChange={() => {}} // read-only
+              onChange={() => {}}
               placeholder="0.0"
               disabled={true}
             />
             <TokenSelector 
               selectedToken={selectedToken}
               onTokenChange={setSelectedToken}
-              label="Выберите токен для покупки"
+              label={t('selectTokenForBuying')}
               excludeToken={{
                 address: '0x0000000000000000000000000000000000000000',
                 symbol: 'ETH',
@@ -232,41 +165,22 @@ export function BuyPage() {
 
         {ethAmount && Number(ethAmount) > 0 && (
           <InfoPanel>
-            <InfoRow label="Стоимость ETH" value="~$2,000" />
-            <InfoRow label="Общая стоимость" value={`$${(Number(ethAmount) * 2000).toFixed(2)}`} />
-            <InfoRow label="Комиссия сети" value="~0.005 ETH" />
+            <InfoRow label={t('ethPrice')} value={'2000'} />
+            <InfoRow label={t('totalCost')} value={`${Number(ethAmount) * 2000}`} />
+            <InfoRow label={t('networkFee')} value={t('estimatedGas', { amount: '0.005' })} />
           </InfoPanel>
         )}
-
         <Button
           variant="success"
           size="lg"
           fullWidth={true}
           disabled={!canBuy}
           loading={isLoading}
-          onClick={handleBuy}
+          onClick={handleBuyClick}
         >
           {getButtonText()}
         </Button>
       </Card>
-
-      <div style={{ 
-        marginTop: '20px', 
-        fontSize: '12px', 
-        color: '#999', 
-        textAlign: 'center',
-        backgroundColor: '#f8f9fa',
-        padding: '16px',
-        borderRadius: '12px'
-      }}>
-        <div style={{ marginBottom: '8px' }}>
-          💡 <strong>Как это работает:</strong>
-        </div>
-        <div>
-          Вы отправляете ETH, получаете выбранные токены по текущему рыночному курсу.
-          Курсы обновляются в реальном времени.
-        </div>
-      </div>
     </div>
   )
-}
+})

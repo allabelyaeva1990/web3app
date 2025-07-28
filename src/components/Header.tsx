@@ -1,27 +1,18 @@
 // src/components/Header.tsx - Обновленный с навигацией
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAccount, useConnect, useDisconnect } from 'wagmi'
+import { useAccount } from 'wagmi'
+import { useWeb3Connection } from '../hooks'
 
 export function Header() {
   const { t, i18n } = useTranslation()
   const location = useLocation()
   const { address, isConnected } = useAccount()
-  const { connect, connectors } = useConnect()
-  const { disconnect } = useDisconnect()
-
+  const { handleConnect, handleDisconnect } = useWeb3Connection()
   // Функция для переключения языка
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'ru' : 'en'
     i18n.changeLanguage(newLang)
-  }
-
-  // Функция для подключения кошелька (берем первый доступный коннектор)
-  const handleConnect = () => {
-    const connector = connectors[0]
-    if (connector) {
-      connect({ connector })
-    }
   }
 
   // Стили для активной ссылки
@@ -157,7 +148,7 @@ export function Header() {
                 🔗 {address?.slice(0, 6)}...{address?.slice(-4)}
               </div>
               <button
-                onClick={() => disconnect()}
+                onClick={() => handleDisconnect()}
                 style={{
                   padding: '8px 12px',
                   border: '1px solid #dc3545',

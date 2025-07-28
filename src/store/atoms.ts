@@ -28,7 +28,7 @@ export const inputTokenAtom = atomWithStorage<Token>('inputToken', {
 })
 
 export const outputTokenAtom = atomWithStorage<Token>('outputToken', {
-  address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', // ✅ ИСПРАВЛЕН: правильный USDC checksum
+  address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 
   symbol: 'USDC',
   decimals: 6,
   name: 'USD Coin'
@@ -77,6 +77,7 @@ export const flipTokensAtom = atom(
 // Атом для истории свопов
 export interface TransationsHistory {
   id: string
+  operationType: 'swap' | 'buy' | 'sell'
   timestamp: number
   inputToken: Token
   outputToken: Token

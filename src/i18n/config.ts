@@ -35,7 +35,7 @@ const resources = {
       'buyDescription': 'Buy tokens with ETH at current rate',
       'paying': 'Paying (ETH)',
       'receiving': 'Receiving',
-      'buyWith': 'Buy {token} with {amount} ETH',
+      'buyWith': 'Buy {{token}} with {{amount}} ETH',
       'howItWorks': 'How it works:',
       'buyExplanation': 'You send ETH, receive selected tokens at current market rate. Rates update in real-time.',
       'processingPurchase': '⏳ Processing purchase...',
@@ -47,7 +47,7 @@ const resources = {
       'sellDescription': 'Sell tokens and receive ETH at current rate',
       'sellingTokens': 'Selling',
       'receivingETH': 'Receiving (ETH)',
-      'sellFor': 'Sell {token} for {amount} ETH',
+      'sellFor': 'Sell {{token}} for {{amount}} ETH',
       'sellExplanation': 'You send tokens, receive ETH at current market rate. Rates update in real-time.',
       'processingSale': '⏳ Processing sale...',
       'enterTokenAmount': 'Enter token amount',
@@ -66,7 +66,7 @@ const resources = {
       'oldest': 'Oldest first',
       'clear': 'Clear',
       'noTransactions': 'No transactions',
-      'noTransactionsWithFilter': 'No transactions with status "{filter}"',
+      'noTransactionsWithFilter': 'No transactions with status "{{filter}}"',
       'walletNotConnected': 'Wallet not connected',
       'connectToView': 'Connect wallet to view transaction history',
       'firstTransaction': 'Make your first swap, buy or sell operation',
@@ -95,17 +95,17 @@ const resources = {
       'sellSuccess': '✅ Sale successful!',
       'sellError': '❌ Sale error',
       'unknownError': 'Unknown error',
-      'received': 'Received {amount} {token}',
-      'swapping': 'Swapping {inputAmount} {inputToken} to {outputAmount} {outputToken}',
+      'received': 'Received {{amount}} {{token}}',
+      'swapping': 'Swapping {{inputAmount}} {{inputToken}} to {{outputAmount}} {{outputToken}}',
 
       
       // Информация о сделке
       'rate': 'Rate',
       'totalCost': 'Total cost',
       'ethPrice': 'ETH Price',
-      'tokenPrice': '{token} Price',
+      'tokenPrice': '{{token}} Price',
       'networkFee': 'Network fee',
-      'estimatedGas': '~{amount} ETH',
+      'estimatedGas': '~{{amount}} ETH',
       'priceImpact': 'Price impact',
       'minimumReceived': 'Minimum received',
       
@@ -144,13 +144,13 @@ const resources = {
       'stateStatus': 'State: {status}',
       
       // Форматирование
-      'timeAgo': '{time} ago',
+      'timeAgo': '{{time}} ago',
       'justNow': 'Just now',
-      'minutesAgo': '{count}m ago',
-      'hoursAgo': '{count}h ago',
-      'daysAgo': '{count}d ago',
-      'txHash': 'TxHash: {hash}',
-      'gasUsed': 'Gas: {amount}',
+      'minutesAgo': '{{count}}m ago',
+      'hoursAgo': '{{count}}h ago',
+      'daysAgo': '{{count}}d ago',
+      'txHash': 'TxHash: {{hash}}',
+      'gasUsed': 'Gas: {{amount}}',
       'exchangeRateDisplay': '1 {from} = {rate} {to}'
     }
   },
@@ -185,7 +185,7 @@ const resources = {
       'buyDescription': 'Купите токены за ETH по текущему курсу',
       'paying': 'Платите (ETH)',
       'receiving': 'Получаете',
-      'buyWith': 'Купить {token} за {amount} ETH',
+      'buyWith': 'Купить {{token}} за {{amount}} ETH',
       'howItWorks': 'Как это работает:',
       'buyExplanation': 'Вы отправляете ETH, получаете выбранные токены по текущему рыночному курсу. Курсы обновляются в реальном времени.',
       'processingPurchase': '⏳ Обработка покупки...',
@@ -197,7 +197,7 @@ const resources = {
       'sellDescription': 'Продайте токены и получите ETH по текущему курсу',
       'sellingTokens': 'Продаете',
       'receivingETH': 'Получаете (ETH)',
-      'sellFor': 'Продать {token} за {amount} ETH',
+      'sellFor': 'Продать {{token}} за {{amount}} ETH',
       'sellExplanation': 'Вы отправляете токены, получаете ETH по текущему рыночному курсу. Курсы обновляются в реальном времени.',
       'processingSale': '⏳ Обработка продажи...',
       'enterTokenAmount': 'Введите количество токенов',
@@ -216,7 +216,7 @@ const resources = {
       'oldest': 'Сначала старые',
       'clear': 'Очистить',
       'noTransactions': 'Нет транзакций',
-      'noTransactionsWithFilter': 'Нет транзакций со статусом "{filter}"',
+      'noTransactionsWithFilter': 'Нет транзакций со статусом "{{filter}}"',
       'walletNotConnected': 'Кошелек не подключен',
       'connectToView': 'Подключите кошелек для просмотра истории транзакций',
       'firstTransaction': 'Совершите первую операцию обмена, покупки или продажи',
@@ -245,8 +245,8 @@ const resources = {
       'sellSuccess': '✅ Продажа успешна!',
       'sellError': '❌ Ошибка продажи',
       'unknownError': 'Неизвестная ошибка',
-      'received': 'Получено {amount} {token}',
-      'swapping': 'Обмениваем {inputAmount} {inputToken} на {outputAmount} {outputToken}',
+      'received': 'Получено {{amount}} {{token}}',
+      'swapping': 'Обмениваем {{inputAmount}} {{inputToken}} на {{outputAmount}} {{outputToken}}',
 
       
       // Информация о сделке
@@ -255,7 +255,7 @@ const resources = {
       'ethPrice': 'Цена ETH',
       'tokenPrice': 'Цена {token}',
       'networkFee': 'Комиссия сети',
-      'estimatedGas': '~{amount} ETH',
+      'estimatedGas': '~{{amount}} ETH',
       'priceImpact': 'Влияние на цену',
       'minimumReceived': 'Минимум к получению',
       
@@ -289,19 +289,19 @@ const resources = {
       'developmentMode': '🛠️ Режим разработки',
       'debugInfo': 'Отладочная информация',
       'fixedVersion': '🔧 Исправленная версия с прямым useBalance',
-      'connectionStatus': 'Подключение: {status}',
-      'balanceStatus': 'Баланс: {status}',
-      'stateStatus': 'Состояние: {status}',
+      'connectionStatus': 'Подключение: {{status}}',
+      'balanceStatus': 'Баланс: {{status}}',
+      'stateStatus': 'Состояние: {{status}}',
       
       // Форматирование
-      'timeAgo': '{time} назад',
+      'timeAgo': '{{time}} назад',
       'justNow': 'Только что',
-      'minutesAgo': '{count}м назад',
-      'hoursAgo': '{count}ч назад',
-      'daysAgo': '{count}д назад',
-      'txHash': 'TxHash: {hash}',
-      'gasUsed': 'Gas: {amount}',
-      'exchangeRateDisplay': '1 {from} = {rate} {to}'
+      'minutesAgo': '{{count}}м назад',
+      'hoursAgo': '{{count}}ч назад',
+      'daysAgo': '{{count}}д назад',
+      'txHash': 'TxHash: {{hash}}',
+      'gasUsed': 'Gas: {{amount}}',
+      'exchangeRateDisplay': '1 {{from}} = {{rate}} {{to}}'
     }
   }
 }

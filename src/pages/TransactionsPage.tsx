@@ -1,45 +1,48 @@
-import { useAtom } from 'jotai'
-import { useMemo, useState } from 'react'
-import { transactionsHistoryAtom } from '../store/atoms'
-import { EmptyState, FilterPanel, PageHeader, StatCard, TransactionCard, type FilterType, type SortType } from '../components'
-import { useAccount } from 'wagmi'
+import React, { useState } from 'react'
+import { 
+  PageHeader,
+  StatCard,
+  FilterPanel,
+  EmptyState,
+  TransactionCard,
+  type FilterType,
+  type SortType
+} from '../components/ui'
+import { 
+  useTransactionManager,
+  useWeb3Connection,
+  useAppLocalization 
+} from '../hooks'
 
-export function TransactionsPage() {
-  const { address } = useAccount()
+export const TransactionsPage = React.memo(function TransactionsPage() {
+  const { t } = useAppLocalization()
+  const { isConnected } = useWeb3Connection()
+  
+  const {
+    // Данные
+    stats,
+    hasTransactions,
+    
+    // Методы
+    getFilteredHistory,
+    clearHistory,
+  } = useTransactionManager()
+  
+  // Локальное состояние фильтров
   const [filter, setFilter] = useState<FilterType>('all')
-  const [history, setHistory] = useAtom(transactionsHistoryAtom)
   const [sortBy, setSortBy] = useState<SortType>('newest')
 
-  // Статистика
-  const stats = {
-    total: history.length,
-    pending: history.filter(tx => tx.status === 'pending').length,
-    success: history.filter(tx => tx.status === 'success').length,
-    failed: history.filter(tx => tx.status === 'failed').length,
-  }
+  // Получаем отфильтрованную историю
+  const filteredHistory = getFilteredHistory(filter, sortBy)
 
-  const handleClearHistory = () => {
-    if (window.confirm('Вы уверены, что хотите очистить всю историю транзакций?')) {
-      setHistory([])
-    }
-  }
-
-  const filteredHistory = useMemo(() => {
-    return history
-      .filter(tx => filter === 'all' || tx.status === filter)
-      .sort((a, b) => {
-        if (sortBy === 'newest') return b.timestamp - a.timestamp
-        return a.timestamp - b.timestamp
-      })
-  }, [history, filter, sortBy])
-
+  // Рендер списка транзакций
   const renderTransactionsList = () => {
-    if (!address) {
+    if (!isConnected) {
       return (
         <EmptyState
           icon="🔐"
-          title="Кошелек не подключен"
-          subtitle="Подключите кошелек для просмотра истории транзакций"
+          title={t('walletNotConnected')}
+          subtitle={t('connectToView')}
         />
       )
     }
@@ -49,11 +52,11 @@ export function TransactionsPage() {
       return (
         <EmptyState
           icon="📭"
-          title={isFiltered ? `Нет транзакций со статусом "${filter}"` : 'Нет транзакций'}
+          title={isFiltered ? t('noTransactionsWithFilter', { filter }) : t('noTransactions')}
           subtitle={
             isFiltered 
-              ? 'Попробуйте изменить фильтр или совершите новую операцию'
-              : 'Совершите первую операцию обмена, покупки или продажи'
+              ? t('changeFilter')
+              : t('firstTransaction')
           }
         />
       )
@@ -72,8 +75,8 @@ export function TransactionsPage() {
     <div style={{ maxWidth: '800px', margin: '0 auto' }}>
       
       <PageHeader 
-        title="История транзакций"
-        subtitle="Все ваши операции обмена, покупки и продажи"
+        title={t('transactionHistory')}
+        subtitle={t('historyDescription')}
         icon="📜"
         gradient="linear-gradient(135deg, #6f42c1 0%, #007bff 100%)"
       />
@@ -86,33 +89,33 @@ export function TransactionsPage() {
       }}>
         <StatCard 
           value={stats.total} 
-          label="Всего" 
+          label={t('total')} 
           color="#007bff" 
         />
         <StatCard 
           value={stats.pending} 
-          label="В ожидании" 
+          label={t('pending')} 
           color="#ffc107" 
         />
         <StatCard 
           value={stats.success} 
-          label="Успешно" 
+          label={t('success')} 
           color="#28a745" 
         />
         <StatCard 
           value={stats.failed} 
-          label="Неудачно" 
+          label={t('failed')} 
           color="#dc3545" 
         />
       </div>
 
       <FilterPanel
         currentFilter={filter}
-        onFilterChange={(newFilter) => setFilter(newFilter)}
+        onFilterChange={setFilter}
         sortBy={sortBy}
-        onSortChange={(newSort) => setSortBy(newSort)}
-        onClear={handleClearHistory}
-        hasData={history.length > 0}
+        onSortChange={setSortBy}
+        onClear={hasTransactions ? clearHistory : undefined}
+        hasData={hasTransactions}
       />
 
       <div style={{
@@ -134,13 +137,12 @@ export function TransactionsPage() {
         borderRadius: '12px'
       }}>
         <div style={{ marginBottom: '8px' }}>
-          💡 <strong>О истории транзакций:</strong>
+          💡 <strong>{t('aboutTransactionHistory')}</strong>
         </div>
         <div>
-          История сохраняется локально в вашем браузере. 
-          Данные не передаются на сервер и доступны только вам.
+          {t('historyStoredLocally')}
         </div>
       </div>
     </div>
   )
-}
+})
