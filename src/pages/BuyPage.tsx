@@ -1,6 +1,6 @@
 
-import React, { useState, useCallback } from 'react'
-import { TokenSelector } from '../components/TokenSelector'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import { TokenSelector, TransactionCostDisplay } from '../components'
 import { POPULAR_TOKENS } from '../constants/tokens'
 import { 
   Card, 
@@ -15,7 +15,8 @@ import {
   useSwapOperations,
   useWeb3Connection,
   useAppLocalization,
-  useTokenBalance
+  useTokenBalance,
+  useDebounce
 } from '../hooks'
 import type { Token } from '../store/atoms'
 
@@ -30,6 +31,10 @@ export const BuyPage = React.memo(function BuyPage() {
   const [selectedToken, setSelectedToken] = useState<Token>(POPULAR_TOKENS[1])
   const [isLoading, setIsLoading] = useState(false)
 
+  const [tokenAmount, setTokenAmount] = useState('')
+
+  const debouncedEthAmount = useDebounce(ethAmount, 500)
+
   // Баланс ETH 
   const ethBalance = useTokenBalance({
     address: '0x0000000000000000000000000000000000000000',
@@ -38,12 +43,26 @@ export const BuyPage = React.memo(function BuyPage() {
     name: 'Ethereum'
   })
 
-  // Расчет количества токенов
-  const tokenAmount = calculateExchangeRate(
-    { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18, name: 'Ethereum' },
-    selectedToken,
-    ethAmount
-  )
+  useEffect(() => {
+  const calculateTokenAmount = async () => {
+    if (!debouncedEthAmount || Number(debouncedEthAmount) <= 0) {
+      setTokenAmount('')
+      return
+    }
+    try {
+      const result = await calculateExchangeRate(
+        { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18, name: 'Ethereum' },
+        selectedToken,
+        debouncedEthAmount
+      )
+      setTokenAmount(result) 
+    } catch (error) {
+      setTokenAmount('0') 
+    } 
+  }
+
+  calculateTokenAmount()
+}, [debouncedEthAmount, selectedToken, calculateExchangeRate]) // Пересчитываем при изменении
 
   // Проверка возможности покупки
   const canBuy = !!(
@@ -86,6 +105,13 @@ export const BuyPage = React.memo(function BuyPage() {
     if (ethBalance.data && Number(ethAmount) > Number(ethBalance.formatted)) return t('insufficientETH')
     return `${t('buyWith', { token: selectedToken.symbol, amount: ethAmount })}`
   }
+
+  const totalPrice = useMemo(() => {
+    if (ethAmount && tokenAmount) {
+      return Number(ethAmount) * Number(tokenAmount)
+    }
+    return t('enterETHAmount')
+  }, [ethAmount, tokenAmount, t])
 
   return (
     <div>
@@ -165,9 +191,12 @@ export const BuyPage = React.memo(function BuyPage() {
 
         {ethAmount && Number(ethAmount) > 0 && (
           <InfoPanel>
-            <InfoRow label={t('ethPrice')} value={'2000'} />
-            <InfoRow label={t('totalCost')} value={`${Number(ethAmount) * 2000}`} />
-            <InfoRow label={t('networkFee')} value={t('estimatedGas', { amount: '0.005' })} />
+            <InfoRow label={t('ethPrice')} value={tokenAmount} />
+            <InfoRow label={t('totalCost')} value={totalPrice.toString()} />
+            <InfoRow 
+              label={t('networkFee')} 
+              value={<TransactionCostDisplay operationType="swap_simple" priority="standard" showUSD={true} />}
+            />
           </InfoPanel>
         )}
         <Button

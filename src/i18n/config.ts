@@ -51,7 +51,7 @@ const resources = {
       'sellExplanation': 'You send tokens, receive ETH at current market rate. Rates update in real-time.',
       'processingSale': '⏳ Processing sale...',
       'enterTokenAmount': 'Enter token amount',
-      'insufficientTokens': '❌ Insufficient {token}',
+      'insufficientTokens': '❌ Insufficient {{token}}',
       
       // Страница транзакций
       'transactionHistory': '📜 Transaction History',
@@ -139,9 +139,9 @@ const resources = {
       'developmentMode': '🛠️ Development Mode',
       'debugInfo': 'Debug Info',
       'fixedVersion': '🔧 Fixed version with direct useBalance',
-      'connectionStatus': 'Connected: {status}',
-      'balanceStatus': 'Balance: {status}',
-      'stateStatus': 'State: {status}',
+      'connectionStatus': 'Connected: {{status}}',
+      'balanceStatus': 'Balance: {{status}}',
+      'stateStatus': 'State: {{status}}',
       
       // Форматирование
       'timeAgo': '{{time}} ago',
@@ -151,7 +151,7 @@ const resources = {
       'daysAgo': '{{count}}d ago',
       'txHash': 'TxHash: {{hash}}',
       'gasUsed': 'Gas: {{amount}}',
-      'exchangeRateDisplay': '1 {from} = {rate} {to}'
+      'exchangeRateDisplay': '1 {{from}} = {{rate}} {{to}}'
     }
   },
   ru: {
@@ -201,7 +201,7 @@ const resources = {
       'sellExplanation': 'Вы отправляете токены, получаете ETH по текущему рыночному курсу. Курсы обновляются в реальном времени.',
       'processingSale': '⏳ Обработка продажи...',
       'enterTokenAmount': 'Введите количество токенов',
-      'insufficientTokens': '❌ Недостаточно {token}',
+      'insufficientTokens': '❌ Недостаточно {{token}}',
       
       // Страница транзакций
       'transactionHistory': '📜 История транзакций',
@@ -253,7 +253,7 @@ const resources = {
       'rate': 'Курс',
       'totalCost': 'Общая стоимость',
       'ethPrice': 'Цена ETH',
-      'tokenPrice': 'Цена {token}',
+      'tokenPrice': 'Цена {{token}}',
       'networkFee': 'Комиссия сети',
       'estimatedGas': '~{{amount}} ETH',
       'priceImpact': 'Влияние на цену',

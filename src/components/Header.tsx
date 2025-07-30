@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAccount } from 'wagmi'
 import { useWeb3Connection } from '../hooks'
+import { HeaderGasIndicator } from './GasTrackerDisplay'
 
 export function Header() {
   const { t, i18n } = useTranslation()
@@ -112,6 +113,8 @@ export function Header() {
             📜 Транзакции
           </Link>
         </nav>
+
+        <HeaderGasIndicator></HeaderGasIndicator>
 
         {/* Правая часть с кнопками */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

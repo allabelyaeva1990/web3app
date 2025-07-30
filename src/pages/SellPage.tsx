@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { TokenSelector } from '../components/TokenSelector'
 import { POPULAR_TOKENS } from '../constants/tokens'
 import { 
@@ -17,6 +17,7 @@ import {
   useTokenBalance
 } from '../hooks'
 import type { Token } from '../store/atoms'
+import { TransactionCostDisplay } from '../components'
 
 export const SellPage = React.memo(function SellPage() {
   const { t } = useAppLocalization()
@@ -30,15 +31,36 @@ export const SellPage = React.memo(function SellPage() {
   const [selectedToken, setSelectedToken] = useState<Token>(POPULAR_TOKENS[1]) // USDC по умолчанию
   const [isLoading, setIsLoading] = useState(false)
 
+  const [ethAmount, setEthAmount] = useState('')
+
   // Баланс выбранного токена 
   const tokenBalance = useTokenBalance(selectedToken)
 
   // Расчет количества ETH 
-  const ethAmount = calculateExchangeRate(
-    selectedToken,
-    { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18, name: 'Ethereum' },
-    tokenAmount
-  )
+  useEffect(() => {
+    const calculateEthAmount = async () => {
+      // Если нет количества токенов - очищаем результат
+      if (!tokenAmount || Number(tokenAmount) <= 0) {
+        setEthAmount('')
+        return
+      }
+      try {
+        // Вызываем асинхронную функцию и ЖДЕМ результат
+        const result = await calculateExchangeRate(
+          selectedToken,
+          { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18, name: 'Ethereum' },
+          tokenAmount
+        )
+        // Устанавливаем результат в состояние (это уже string, не Promise!)
+        setEthAmount(result)
+      } catch (error) {
+        console.error('Ошибка расчета ethAmount:', error)
+        setEthAmount('0')
+      } 
+    }
+
+    calculateEthAmount()
+  }, [tokenAmount, selectedToken, calculateExchangeRate])
 
   // Проверка возможности продажи
   const canSell = !!(
@@ -96,14 +118,6 @@ export const SellPage = React.memo(function SellPage() {
     ethAmount, 
     t
   ])
-
-  // Цена токена для отображения
-  const getTokenPrice = useCallback(() => {
-    const prices: Record<string, number> = {
-      'ETH': 2000, 'USDC': 1, 'DAI': 1, 'USDT': 1, 'WBTC': 40000
-    }
-    return prices[selectedToken.symbol] || 1
-  }, [selectedToken.symbol])
 
   // Курс обмена
   const exchangeRateText = React.useMemo(() => {
@@ -188,16 +202,16 @@ export const SellPage = React.memo(function SellPage() {
           <InfoPanel>
             <InfoRow 
               label={t('tokenPrice', { token: selectedToken.symbol })} 
-              value={getTokenPrice()?.toString()} 
+              value={exchangeRateText} 
             />
             <InfoRow 
               label={t('totalCost')} 
               value={`${Number(ethAmount) * 2000}`} 
             />
             <InfoRow 
-              label={t('networkFee')} 
-              value={t('estimatedGas', { amount: '0.005' })} 
-            />
+                          label={t('networkFee')} 
+                          value={<TransactionCostDisplay operationType="swap_simple" priority="standard" showUSD={true} />}
+                        />
           </InfoPanel>
         )}
 

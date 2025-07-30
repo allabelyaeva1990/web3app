@@ -16,6 +16,7 @@ import {
 import { useAppStore } from '../store/zustand-store'
 import { useNotifications } from './useNotifications'
 import { useTokenBalance } from './useTokenBalance'
+import { PriceService } from '../services'
 
 export function useSwapOperations() {
   const { t } = useTranslation()
@@ -63,34 +64,30 @@ export function useSwapOperations() {
 
   // ЛОГИКА РАСЧЕТОВ
   
-  const calculateExchangeRate = useCallback((
+  const calculateExchangeRate = useCallback(async(
     inputToken: Token,
     outputToken: Token,
     inputAmount: string
   ) => {
     if (!inputAmount || isNaN(Number(inputAmount))) return '0'
     
-    // 🎭 Mock курсы (в реальности из Uniswap API)
-    const prices: Record<string, number> = {
-      'ETH': 2000,
-      'USDC': 1,
-      'DAI': 1,
-      'USDT': 1,
-      'WBTC': 40000,
+    try {
+      // Получаем реальные цены через наш сервис
+      return await PriceService.calculateExchangeRate(
+        inputToken.symbol,
+        outputToken.symbol,
+        inputAmount
+      )
+    } catch (error) {
+      console.error('Ошибка расчета курса:', error)
+      return '0'
     }
-    
-    const inputPrice = prices[inputToken.symbol] || 1
-    const outputPrice = prices[outputToken.symbol] || 1
-    const usdValue = Number(inputAmount) * inputPrice
-    const outputAmount = usdValue / outputPrice
-    
-    return outputAmount.toFixed(Math.min(6, outputToken.decimals))
   }, [])
 
   // ОБРАБОТЧИКИ
   
   // Изменение входной суммы
-  const handleInputChange = useCallback((value: string) => {
+  const handleInputChange = useCallback(async(value: string) => {
     // Очищаем ввод
     const cleanValue = value.replace(/[^0-9.]/g, '')
     const parts = cleanValue.split('.')
@@ -102,7 +99,7 @@ export function useSwapOperations() {
     
     // Пересчитываем выходную сумму
     if (sanitizedValue && !isNaN(Number(sanitizedValue))) {
-      const outputValue = calculateExchangeRate(inputToken, outputToken, sanitizedValue)
+      const outputValue = await calculateExchangeRate(inputToken, outputToken, sanitizedValue)
       setOutputAmount(outputValue)
     } else {
       setOutputAmount('')
@@ -219,7 +216,7 @@ export function useSwapOperations() {
 
   // Покупка (ETH → Token)
   const handleBuy = useCallback(async (ethAmount: string, selectedToken: Token) => {
-    const tokenAmount = calculateExchangeRate(
+    const tokenAmount = await calculateExchangeRate(
       { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18, name: 'Ethereum' },
       selectedToken,
       ethAmount
@@ -236,7 +233,7 @@ export function useSwapOperations() {
 
   // Продажа (Token → ETH)
   const handleSell = useCallback(async (tokenAmount: string, selectedToken: Token) => {
-    const ethAmount = calculateExchangeRate(
+    const ethAmount = await calculateExchangeRate(
       selectedToken,
       { address: '0x0000000000000000000000000000000000000000', symbol: 'ETH', decimals: 18, name: 'Ethereum' },
       tokenAmount

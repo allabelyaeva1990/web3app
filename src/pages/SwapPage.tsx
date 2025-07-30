@@ -1,5 +1,4 @@
 import React from 'react'
-import { TokenSelector } from '../components/TokenSelector'
 import { 
   Card, 
   InputContainer, 
@@ -10,6 +9,11 @@ import {
   PageHeader,
   Button
 } from '../components/ui'
+import { 
+  TokenSelector, 
+  TokenPriceDisplay, 
+  SwapGasCost, 
+  GasTrackerDebug } from '../components'
 import { 
   useSwapOperations,
   useWeb3Connection,
@@ -47,11 +51,19 @@ export const SwapPage = React.memo(function SwapPage() {
 
   return (
     <div>
+      <TokenPriceDisplay tokenSymbol={inputToken.symbol}></TokenPriceDisplay>
       <PageHeader 
         title={t('swap')}
         subtitle="Обменивайте токены по лучшему курсу"
         icon="🔄"
       />
+
+      {/* Отладочная панель с реальными ценами и газом в development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{ marginBottom: '24px' }}>
+          <GasTrackerDebug />
+        </div>
+      )}
 
       <Card>
         <InputContainer
@@ -116,12 +128,14 @@ export const SwapPage = React.memo(function SwapPage() {
               highlight={true}
             />
             <InfoRow 
-              label="Влияние на цену"
+              label={t('priceImpact')}
               value={swapInfo.priceImpact}
             />
+            {/* Реальная стоимость газа */}
+            
             <InfoRow 
               label={t('networkFee')}
-              value={swapInfo.gasEstimate}
+              value={<SwapGasCost />}
             />
           </InfoPanel>
         )}
